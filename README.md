@@ -1,6 +1,6 @@
 ## scraping-api
 
-[API server](http://github.com/azer/atlas) for [goquery](https://github.com/PuerkitoBio/goquery)
+Go [API server](http://github.com/azer/atlas) for scraping data with [CSS selectors](https://github.com/PuerkitoBio/goquery)
 
 ## Install
 
