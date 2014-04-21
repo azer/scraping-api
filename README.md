@@ -37,3 +37,9 @@ A request like above will output:
   "ok": true
 }%
 ```
+
+You can get attribute values by choosing `attr:?` as node value in the query:
+
+```
+$ curl -X POST -d '{"url":"http://azer.io", "query": { "first-article": { "selector": ".articles li:first-child a", "node":"attr:href" } }}' http://localhost:8080
+```
