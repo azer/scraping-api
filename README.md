@@ -5,7 +5,7 @@ Go [API server](http://github.com/azer/atlas) for scraping data with [CSS select
 ## Install
 
 ```bash
-$ go get github.com/azer/scraping-api
+$ go get github.com/azer/scraping-api/scraping-api
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ $ go get github.com/azer/scraping-api
 Start the server:
 
 ```bash
-$ scraping-api
+$ scraping-api -port 1234
 ```
 
 And send JSON-Post requests to scrape data:
