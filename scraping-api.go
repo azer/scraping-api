@@ -1,4 +1,4 @@
-package main
+package scrapingAPI
 
 import (
 	"github.com/azer/atlas"
@@ -31,13 +31,9 @@ type Result struct {
 
 type Results map[string]Result
 
-var api = atlas.New(atlas.Map{
+var Server = atlas.New(atlas.Map{
 	"/": Scrape,
 })
-
-func main() {
-	api.Start(":8080")
-}
 
 func Scrape(request *atlas.Request) *atlas.Response {
 	opts := &Options{}
