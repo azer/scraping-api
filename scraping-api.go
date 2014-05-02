@@ -1,32 +1,32 @@
 package scrapingAPI
 
 import (
-	"github.com/azer/atlas"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/azer/atlas"
+	. "github.com/azer/debug"
+	"github.com/franela/goreq"
 	"net/http"
 	"net/url"
-	"encoding/json"
 	"strings"
-	"fmt"
-	. "github.com/azer/debug"
 )
 
 type Query struct {
-  Selector string
-  Node string
+	Selector string
+	Node     string
 }
 
 type Options struct {
-  URL string
+	URL      string
 	Callback string
-  Query map[string]Query
+	Query    map[string]Query
 }
 
 type Result struct {
-  Key string
-  Selector string
-  Value string
-	Node string
+	Key      string
+	Selector string
+	Value    string
+	Node     string
 }
 
 type Results map[string]Result
@@ -39,7 +39,10 @@ func Scrape(request *atlas.Request) *atlas.Response {
 	opts := &Options{}
 	err := request.JSONPost(&opts)
 
+	Debug("Scraping %v", err)
+
 	if err != nil {
+		Debug("Failed to parse the JSON body: %v", err)
 		return atlas.Error(500, err)
 	}
 
@@ -88,10 +91,10 @@ func Select(opts *Options) (result Results, err error) {
 		}
 
 		result[key] = Result{
-			Key: key,
-			Value: value,
-   		Selector: query.Selector,
-   		Node: query.Node,
+			Key:      key,
+			Value:    value,
+			Selector: query.Selector,
+			Node:     query.Node,
 		}
 	}
 
@@ -115,24 +118,18 @@ func Deliver(opts *Options) {
 
 	result, err := Select(opts)
 
-	data := url.Values{}
-
 	if err != nil {
 		DeliverError(opts, "Failed to parse and extract the data.")
 		return
 	}
 
-	strResult, err := json.Marshal(result)
-
-	if err != nil {
-		DeliverError(opts, "Apologizes, scraping-api screwed up.")
-		return
-	}
-
-	data.Set(string(strResult), "")
-
 	Debug("Posting results to %s", opts.Callback)
-	_, err = http.PostForm(opts.Callback, data)
+
+	_, err = goreq.Request{
+		Method: "POST",
+		Uri:    opts.Callback,
+		Body:   result,
+	}.Do()
 
 	if err != nil {
 		Debug("Unable to post to %s", opts.Callback)

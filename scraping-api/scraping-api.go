@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"github.com/azer/scraping-api"
 	"fmt"
+	"github.com/azer/scraping-api"
 )
 
 var port int
