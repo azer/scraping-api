@@ -1,32 +1,31 @@
 package scrapingAPI
 
 import (
-	"github.com/azer/atlas"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/azer/atlas"
+	. "github.com/azer/debug"
+	"github.com/franela/goreq"
 	"net/http"
 	"net/url"
-	"strings"
-	"fmt"
-	"github.com/franela/goreq"
-	. "github.com/azer/debug"
 )
 
 type Query struct {
-  Selector string
-  Node string
+	Selector string
+	Node     string
 }
 
 type Options struct {
-  URL string
+	URL      string
 	Callback string
-  Query map[string]Query
+	Query    map[string]Query
 }
 
 type Result struct {
-  Key string
-  Selector string
-  Value string
-	Node string
+	Key      string
+	Selector string
+	Value    string
+	Node     string
 }
 
 type Results map[string]Result
@@ -78,12 +77,7 @@ func Select(opts *Options) (result Results, err error) {
 		}
 
 		if query.Node == "html" {
-			value, _ := el.Html()
-			value = strings.Replace(value, "\u003c", "<", -1)
-			value = strings.Replace(value, "\u003e", ">", -1)
-			value = strings.Replace(value, "<br>", "\n", -1)
-			value = strings.Replace(value, "<br/>", "\n", -1)
-			value = strings.Replace(value, "<br />", "\n", -1)
+			value, _ = el.Html()
 		}
 
 		if len(query.Node) > 5 && query.Node[0:5] == "attr:" {
@@ -91,10 +85,10 @@ func Select(opts *Options) (result Results, err error) {
 		}
 
 		result[key] = Result{
-			Key: key,
-			Value: value,
-   		Selector: query.Selector,
-   		Node: query.Node,
+			Key:      key,
+			Value:    value,
+			Selector: query.Selector,
+			Node:     query.Node,
 		}
 	}
 
@@ -126,10 +120,10 @@ func Deliver(opts *Options) {
 	Debug("Posting results to %s", opts.Callback)
 
 	_, err = goreq.Request{
-		Method: "POST",
-  	Uri: opts.Callback,
-  	Body: result,
-		Accept: "application/json",
+		Method:      "POST",
+		Uri:         opts.Callback,
+		Body:        result,
+		Accept:      "application/json",
 		ContentType: "application/json",
 	}.Do()
 
