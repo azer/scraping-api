@@ -1,32 +1,32 @@
 package scrapingAPI
 
 import (
-	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"github.com/azer/atlas"
-	. "github.com/azer/debug"
-	"github.com/franela/goreq"
+	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"net/url"
 	"strings"
+	"fmt"
+	"github.com/franela/goreq"
+	. "github.com/azer/debug"
 )
 
 type Query struct {
-	Selector string
-	Node     string
+  Selector string
+  Node string
 }
 
 type Options struct {
-	URL      string
+  URL string
 	Callback string
-	Query    map[string]Query
+  Query map[string]Query
 }
 
 type Result struct {
-	Key      string
-	Selector string
-	Value    string
-	Node     string
+  Key string
+  Selector string
+  Value string
+	Node string
 }
 
 type Results map[string]Result
@@ -91,10 +91,10 @@ func Select(opts *Options) (result Results, err error) {
 		}
 
 		result[key] = Result{
-			Key:      key,
-			Value:    value,
-			Selector: query.Selector,
-			Node:     query.Node,
+			Key: key,
+			Value: value,
+   		Selector: query.Selector,
+   		Node: query.Node,
 		}
 	}
 
@@ -127,8 +127,10 @@ func Deliver(opts *Options) {
 
 	_, err = goreq.Request{
 		Method: "POST",
-		Uri:    opts.Callback,
-		Body:   result,
+  	Uri: opts.Callback,
+  	Body: result,
+		Accept: "application/json",
+		ContentType: "application/json",
 	}.Do()
 
 	if err != nil {
