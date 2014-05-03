@@ -8,6 +8,8 @@ import (
 	"github.com/franela/goreq"
 	"net/http"
 	"net/url"
+	"time"
+	"math"
 )
 
 type Query struct {
@@ -19,6 +21,7 @@ type Options struct {
 	URL      string
 	Callback string
 	Query    map[string]Query
+	StartTS  int64
 }
 
 type Result struct {
@@ -30,13 +33,37 @@ type Result struct {
 
 type Results map[string]Result
 
+type Stats struct {
+	Scraping int
+	Scraped int
+	AvgDeliverTime int
+	Now int64
+}
+
+var Scraping = 0
+var Scraped = 0
+var TotalDeliverTime = 0
+var AvgDeliverTime = 0
+
 var Server = atlas.New(atlas.Map{
-	"/": Scrape,
+	"/scrape": Scrape,
+	"/stats": GetStats,
 })
+
+func GetStats(request *atlas.Request) *atlas.Response {
+	return atlas.Success(Stats{
+		Scraping,
+		Scraped,
+		AvgDeliverTime,
+		now(),
+	})
+}
 
 func Scrape(request *atlas.Request) *atlas.Response {
 	opts := &Options{}
 	err := request.JSONPost(&opts)
+
+	opts.StartTS = now()
 
 	Debug("Scraping %v", err)
 
@@ -45,12 +72,17 @@ func Scrape(request *atlas.Request) *atlas.Response {
 		return atlas.Error(500, err)
 	}
 
+	Scraping++
+
 	if len(opts.Callback) > 0 {
 		go Deliver(opts)
 		return atlas.Success("Results will be posted to " + opts.Callback)
 	}
 
 	result, err := Select(opts)
+
+	Scraping--
+	Scraped++
 
 	if err != nil {
 		return atlas.Error(500, err)
@@ -112,12 +144,19 @@ func Deliver(opts *Options) {
 
 	result, err := Select(opts)
 
+	Scraping--
+	Scraped++
+
 	if err != nil {
 		DeliverError(opts, "Failed to parse and extract the data.")
 		return
 	}
 
 	Debug("Posting results to %s", opts.Callback)
+
+	elapsed := int(now() - opts.StartTS);
+	TotalDeliverTime = TotalDeliverTime + elapsed
+	AvgDeliverTime = TotalDeliverTime / Scraped
 
 	_, err = goreq.Request{
 		Method:      "POST",
@@ -130,4 +169,9 @@ func Deliver(opts *Options) {
 	if err != nil {
 		Debug("Unable to post to %s", opts.Callback)
 	}
+}
+
+
+func now() int64 {
+	return int64(math.Floor(float64(time.Now().UnixNano()) / 1000000))
 }
