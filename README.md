@@ -19,7 +19,7 @@ $ scraping-api -port 1234
 And send JSON-Post requests to scrape data:
 
 ```bash
-$ curl -X POST -d '{"url":"http://azer.io", "query": { "title": { "selector": "h1:first-child", "node":"text" } }}' http://localhost:8080
+$ curl -X POST -d '{"url":"http://azer.io", "query": { "title": { "selector": "h1:first-child", "node":"text" } }}' http://localhost:8080/scrape
 ```
 
 A request like above will output:
@@ -41,13 +41,13 @@ A request like above will output:
 You can get attribute values by choosing `attr:?` as node value in the query:
 
 ```
-$ curl -X POST -d '{"url":"http://azer.io", "query": { "first-article": { "selector": ".articles li:first-child a", "node":"attr:href" } }}' http://localhost:8080
+$ curl -X POST -d '{"url":"http://azer.io", "query": { "first-article": { "selector": ".articles li:first-child a", "node":"attr:href" } }}' http://localhost:8080/scrape
 ```
 
 Optionally, results delivered to a callback URL by specifying the "callback" parameter:
 
 ```
-$ curl -X POST -d '{"url":"http://azer.io", "callback":"http://localhost/save-results", "query": { "title": { "selector": "h1:first-child", "node":"text" } }}' http://localhost:8080
+$ curl -X POST -d '{"url":"http://azer.io", "callback":"http://localhost/save-results", "query": { "title": { "selector": "h1:first-child", "node":"text" } }}' http://localhost:8080/scrape
 ```
 
 ![](http://distilleryimage5.ak.instagram.com/51eb9256ba2611e3a63112f56a54141d_6.jpg)
