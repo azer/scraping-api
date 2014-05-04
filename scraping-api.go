@@ -174,8 +174,6 @@ func Deliver(opts *Options) {
 		ContentType: "application/json",
 	}.Do()
 
-	defer res.Body.Close()
-
 	Scraping--
 	Scraped++
 	elapsed := int(now() - opts.StartTS);
@@ -186,6 +184,8 @@ func Deliver(opts *Options) {
 		FailedDelivery++
 		Debug("Unable to post to %s. Error: %v", opts.Callback, err)
 	}
+
+	defer res.Body.Close()
 }
 
 
