@@ -166,13 +166,15 @@ func Deliver(opts *Options) {
 
 	Debug("Posting results to %s", opts.Callback)
 
-	_, err = goreq.Request{
+	res, err := goreq.Request{
 		Method:      "POST",
 		Uri:         opts.Callback,
 		Body:        result,
 		Accept:      "application/json",
 		ContentType: "application/json",
 	}.Do()
+
+	defer res.Body.Close()
 
 	Scraping--
 	Scraped++
