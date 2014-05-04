@@ -38,12 +38,18 @@ type Stats struct {
 	Scraped int
 	AvgDeliverTime int
 	Now int64
+	ActiveRequest int
+	FailedRequest int
+	FailedDelivery int
 }
 
 var Scraping = 0
 var Scraped = 0
 var TotalDeliverTime = 0
 var AvgDeliverTime = 0
+var FailedDelivery = 0
+var ActiveRequest = 0
+var FailedRequest = 0
 
 var Server = atlas.New(atlas.Map{
 	"/scrape": Scrape,
@@ -56,6 +62,9 @@ func GetStats(request *atlas.Request) *atlas.Response {
 		Scraped,
 		AvgDeliverTime,
 		now(),
+		ActiveRequest,
+		FailedRequest,
+		FailedDelivery,
 	})
 }
 
@@ -95,7 +104,11 @@ func Select(opts *Options) (result Results, err error) {
 	var doc *goquery.Document
 	result = make(Results)
 
+	ActiveRequest++
+
 	if doc, err = goquery.NewDocument(opts.URL); err != nil {
+		ActiveRequest--
+		FailedRequest++
 		return nil, err
 	}
 
@@ -123,6 +136,8 @@ func Select(opts *Options) (result Results, err error) {
 			Node:     query.Node,
 		}
 	}
+
+	ActiveRequest--
 
 	return result, nil
 }
@@ -166,6 +181,7 @@ func Deliver(opts *Options) {
 	AvgDeliverTime = TotalDeliverTime / Scraped
 
 	if err != nil {
+		FailedDelivery++
 		Debug("Unable to post to %s", opts.Callback)
 	}
 }
