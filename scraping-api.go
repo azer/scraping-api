@@ -41,6 +41,7 @@ type Stats struct {
 	ActiveRequest int
 	FailedRequest int
 	FailedDelivery int
+	LastError string
 }
 
 var Scraping = 0
@@ -50,6 +51,7 @@ var AvgDeliverTime = 0
 var FailedDelivery = 0
 var ActiveRequest = 0
 var FailedRequest = 0
+var LastError = ""
 
 var Server = atlas.New(atlas.Map{
 	"/scrape": Scrape,
@@ -65,6 +67,7 @@ func GetStats(request *atlas.Request) *atlas.Response {
 		ActiveRequest,
 		FailedRequest,
 		FailedDelivery,
+		LastError,
 	})
 }
 
@@ -183,6 +186,8 @@ func Deliver(opts *Options) {
 	if err != nil {
 		FailedDelivery++
 		Debug("Unable to post to %s. Error: %v", opts.Callback, err)
+		LastError = err.Error()
+		return
 	}
 
 	defer res.Body.Close()
