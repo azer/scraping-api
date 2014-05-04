@@ -182,7 +182,7 @@ func Deliver(opts *Options) {
 
 	if err != nil {
 		FailedDelivery++
-		Debug("Unable to post to %s", opts.Callback)
+		Debug("Unable to post to %s. Error: %v", opts.Callback, err)
 	}
 }
 
