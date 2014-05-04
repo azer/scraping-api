@@ -144,19 +144,12 @@ func Deliver(opts *Options) {
 
 	result, err := Select(opts)
 
-	Scraping--
-	Scraped++
-
 	if err != nil {
 		DeliverError(opts, "Failed to parse and extract the data.")
 		return
 	}
 
 	Debug("Posting results to %s", opts.Callback)
-
-	elapsed := int(now() - opts.StartTS);
-	TotalDeliverTime = TotalDeliverTime + elapsed
-	AvgDeliverTime = TotalDeliverTime / Scraped
 
 	_, err = goreq.Request{
 		Method:      "POST",
@@ -165,6 +158,12 @@ func Deliver(opts *Options) {
 		Accept:      "application/json",
 		ContentType: "application/json",
 	}.Do()
+
+	Scraping--
+	Scraped++
+	elapsed := int(now() - opts.StartTS);
+	TotalDeliverTime = TotalDeliverTime + elapsed
+	AvgDeliverTime = TotalDeliverTime / Scraped
 
 	if err != nil {
 		Debug("Unable to post to %s", opts.Callback)
