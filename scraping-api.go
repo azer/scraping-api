@@ -175,6 +175,7 @@ func Deliver(opts *Options) {
 		Body:        result,
 		Accept:      "application/json",
 		ContentType: "application/json",
+		Timeout:     3000 * time.Millisecond,
 	}.Do()
 
 	Scraping--
