@@ -39,6 +39,7 @@ type Stats struct {
 	Now                  int64
 	ActiveRequest        int
 	FailedRequest        int
+	SuccessDelivery      int
 	FailedDelivery       int
 	AvgDeliverTime       int
 	ShortestDeliveryTime int
@@ -49,10 +50,11 @@ type Stats struct {
 var (
 	Scraping             = 0
 	Scraped              = 0
-	FailedDelivery       = 0
 	ActiveRequest        = 0
 	FailedRequest        = 0
 	LastError            = ""
+	SuccessDelivery      = 0
+	FailedDelivery       = 0
 	TotalDeliverTime     = 0
 	AvgDeliverTime       = 0
 	ShortestDeliveryTime = 9999
@@ -71,6 +73,7 @@ func GetStats(request *atlas.Request) *atlas.Response {
 		now(),
 		ActiveRequest,
 		FailedRequest,
+		SuccessDelivery,
 		FailedDelivery,
 		AvgDeliverTime,
 		ShortestDeliveryTime,
@@ -206,6 +209,8 @@ func Deliver(opts *Options) {
 		LastError = err.Error()
 		return
 	}
+
+	SuccessDelivery++
 
 	defer res.Body.Close()
 }
