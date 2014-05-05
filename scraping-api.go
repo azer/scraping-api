@@ -6,10 +6,10 @@ import (
 	"github.com/azer/atlas"
 	. "github.com/azer/debug"
 	"github.com/franela/goreq"
+	"math"
 	"net/http"
 	"net/url"
 	"time"
-	"math"
 )
 
 type Query struct {
@@ -34,39 +34,47 @@ type Result struct {
 type Results map[string]Result
 
 type Stats struct {
-	Scraping int
-	Scraped int
-	AvgDeliverTime int
-	Now int64
-	ActiveRequest int
-	FailedRequest int
-	FailedDelivery int
-	LastError string
+	Scraping             int
+	Scraped              int
+	Now                  int64
+	ActiveRequest        int
+	FailedRequest        int
+	FailedDelivery       int
+	AvgDeliverTime       int
+	ShortestDeliveryTime int
+	LongestDeliveryTime  int
+	LastError            string
 }
 
-var Scraping = 0
-var Scraped = 0
-var TotalDeliverTime = 0
-var AvgDeliverTime = 0
-var FailedDelivery = 0
-var ActiveRequest = 0
-var FailedRequest = 0
-var LastError = ""
+var (
+	Scraping             = 0
+	Scraped              = 0
+	FailedDelivery       = 0
+	ActiveRequest        = 0
+	FailedRequest        = 0
+	LastError            = ""
+	TotalDeliverTime     = 0
+	AvgDeliverTime       = 0
+	ShortestDeliveryTime = 9999
+	LongestDeliveryTime  = 0
+)
 
 var Server = atlas.New(atlas.Map{
 	"/scrape": Scrape,
-	"/stats": GetStats,
+	"/stats":  GetStats,
 })
 
 func GetStats(request *atlas.Request) *atlas.Response {
 	return atlas.Success(Stats{
 		Scraping,
 		Scraped,
-		AvgDeliverTime,
 		now(),
 		ActiveRequest,
 		FailedRequest,
 		FailedDelivery,
+		AvgDeliverTime,
+		ShortestDeliveryTime,
+		LongestDeliveryTime,
 		LastError,
 	})
 }
@@ -175,14 +183,22 @@ func Deliver(opts *Options) {
 		Body:        result,
 		Accept:      "application/json",
 		ContentType: "application/json",
-		Timeout:     3000 * time.Millisecond,
+		Timeout:     10000 * time.Millisecond,
 	}.Do()
 
 	Scraping--
 	Scraped++
-	elapsed := int(now() - opts.StartTS);
+	elapsed := int(now() - opts.StartTS)
 	TotalDeliverTime = TotalDeliverTime + elapsed
 	AvgDeliverTime = TotalDeliverTime / Scraped
+
+	if elapsed < ShortestDeliveryTime {
+		ShortestDeliveryTime = elapsed
+	}
+
+	if elapsed > LongestDeliveryTime {
+		LongestDeliveryTime = elapsed
+	}
 
 	if err != nil {
 		FailedDelivery++
@@ -193,7 +209,6 @@ func Deliver(opts *Options) {
 
 	defer res.Body.Close()
 }
-
 
 func now() int64 {
 	return int64(math.Floor(float64(time.Now().UnixNano()) / 1000000))
